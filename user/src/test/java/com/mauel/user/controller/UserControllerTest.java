@@ -1,6 +1,5 @@
 package com.mauel.user.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mauel.user.dto.UserRegistrationReqDto;
 import com.mauel.user.dto.UserRegistrationRespDto;
@@ -100,7 +99,6 @@ public class UserControllerTest {
         UserRegistrationReqDto reqDto = new UserRegistrationReqDto();
         reqDto.setEmail("foo$bar");
         reqDto.setUsername("foo");
-        reqDto.setBirthDate("950920");
         reqDto.setSex(1);
 
         ResultActions result = mockMvc.perform(post("/api/user")

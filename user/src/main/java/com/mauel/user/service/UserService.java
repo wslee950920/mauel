@@ -19,6 +19,15 @@ public interface UserService {
                 .sex(Sex.valueOf(reqDto.getSex())).build();
     }
 
+    default UserRegistrationRespDto entityToDto(User user){
+        return UserRegistrationRespDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .birthDate(user.getBirthDate())
+                .sex(user.getSex()).build();
+    }
+
     private LocalDate parseBirthDate(String birthDate, int sex) {
         String full;
 

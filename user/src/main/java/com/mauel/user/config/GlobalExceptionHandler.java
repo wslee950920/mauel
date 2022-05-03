@@ -1,5 +1,7 @@
 package com.mauel.user.config;
 
+import com.mauel.user.exception.DuplicatedException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -17,14 +19,21 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
         Map<String, Object> body = new HashMap<>();
 
-        List<String> errors = new ArrayList<>();
+        List<String> messages = new ArrayList<>();
         for (FieldError error : exception.getBindingResult().getFieldErrors()) {
-            errors.add(error.getDefaultMessage());
+            messages.add(error.getDefaultMessage());
         }
 
-        body.put("errors", errors);
+        body.put("errors", messages);
 
         return ResponseEntity.badRequest().body(body);
     }
 
+    @ExceptionHandler
+    public ResponseEntity<Map<String, String>> handleDuplicatedException(DuplicatedException exception){
+        Map<String, String> body=new HashMap<>();
+        body.put("message", exception.getMessage());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
 }
