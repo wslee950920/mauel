@@ -1,4 +1,4 @@
-package com.mauel.user.controller;
+package com.mauel.user.util;
 
 import org.springframework.restdocs.operation.preprocess.OperationRequestPreprocessor;
 import org.springframework.restdocs.operation.preprocess.OperationResponsePreprocessor;

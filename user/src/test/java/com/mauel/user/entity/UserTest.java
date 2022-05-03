@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class UserTest {
     @DisplayName("성별 타입 변환(enum <-> char)")
     @Test
-    public void testSexConverting(){
+    public void convertSexSuccess(){
         User user=User.builder()
                 .sex(Sex.MALE).build();
 

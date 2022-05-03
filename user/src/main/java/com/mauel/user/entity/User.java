@@ -30,7 +30,8 @@ public class User {
     @Column(nullable = false)
     private char sex;
 
-    public User(String email, String username, LocalDate birthDate, char sex) {
+    public User(Long id, String email, String username, LocalDate birthDate, char sex) {
+        this.id = id;
         this.email = email;
         this.username = username;
         this.birthDate = birthDate;
@@ -62,12 +63,18 @@ public class User {
     }
 
     public static class UserBuilder {
+        private Long id;
         private String email;
         private String username;
         private LocalDate birthDate;
         private char sex;
 
         UserBuilder() {
+        }
+
+        public UserBuilder id(Long id) {
+            this.id = id;
+            return this;
         }
 
         public UserBuilder email(String email) {
@@ -91,7 +98,7 @@ public class User {
         }
 
         public User build() {
-            return new User(email, username, birthDate, sex);
+            return new User(id, email, username, birthDate, sex);
         }
 
         public String toString() {
