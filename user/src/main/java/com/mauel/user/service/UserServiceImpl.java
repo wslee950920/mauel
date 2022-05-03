@@ -24,12 +24,10 @@ public class UserServiceImpl implements UserService {
         User user = dtoToEntity(reqDto);
 
         Optional<User> optUser;
-
         optUser=userRepository.findByEmail(user.getEmail());
         if(optUser.isPresent()){
             throw new DuplicatedException("이미 가입된 이메일 입니다.");
         }
-
         optUser=userRepository.findByUsername(user.getUsername());
         if(optUser.isPresent()){
             throw new DuplicatedException("이미 사용중인 사용자 이름 입니다.");

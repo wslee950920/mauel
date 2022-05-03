@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
             messages.add(error.getDefaultMessage());
         }
 
-        body.put("errors", messages);
+        body.put("messages", messages);
 
         return ResponseEntity.badRequest().body(body);
     }
