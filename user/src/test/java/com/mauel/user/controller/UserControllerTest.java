@@ -1,9 +1,9 @@
 package com.mauel.user.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mauel.user.dto.UserModificationReqDto;
 import com.mauel.user.dto.UserRegistrationReqDto;
-import com.mauel.user.dto.UserRegistrationRespDto;
-import com.mauel.user.entity.Sex;
+import com.mauel.user.entity.User;
 import com.mauel.user.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,19 +15,21 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-import java.time.LocalDate;
-
 import static com.mauel.user.util.ApiDocumentUtils.getDocumentRequest;
 import static com.mauel.user.util.ApiDocumentUtils.getDocumentResponse;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureRestDocs
 @WebMvcTest
@@ -41,24 +43,21 @@ public class UserControllerTest {
     @MockBean
     UserService userService;
 
+    @DisplayName("회원가입 성공")
     @Test
-    public void registerUserSuccess() throws Exception {
+    public void Should_Created_When_ValidRegistrationRequestBody() throws Exception {
         //given
-        UserRegistrationRespDto respDto = UserRegistrationRespDto.builder()
+        User user = User.builder()
                 .id(1L)
                 .email("foo@bar")
-                .username("foo")
-                .birthDate(LocalDate.of(1995, 9, 20))
-                .sex(Sex.MALE).build();
+                .username("foo").build();
 
-        given(userService.registerUser(any(UserRegistrationReqDto.class))).willReturn(respDto);
+        given(userService.addUser(any(UserRegistrationReqDto.class))).willReturn(user);
 
         //when
         UserRegistrationReqDto reqDto = new UserRegistrationReqDto();
         reqDto.setEmail("foo@bar");
         reqDto.setUsername("foo");
-        reqDto.setBirthDate("950920");
-        reqDto.setSex(1);
 
         ResultActions result = mockMvc.perform(post("/api/user")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -68,38 +67,26 @@ public class UserControllerTest {
 
         //then
         result.andExpect(status().isCreated())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.birthDate").value("1995-09-20"))
-                .andExpect(jsonPath("$.sex").value("M"))
+                .andExpect(header().string("Location", "/api/user/"+user.getId()))
                 .andDo(document("user-register",
                         getDocumentRequest(),
                         getDocumentResponse(),
-                        responseHeaders(
-                                headerWithName("Location").description("사용자 정보 uri")
-                        ),
                         requestFields(
                                 fieldWithPath("email").description("이메일"),
-                                fieldWithPath("username").description("사용자 이름"),
-                                fieldWithPath("birthDate").description("생년월일(주민등록번호 앞자리)"),
-                                fieldWithPath("sex").description("성별(주민등록번호 뒷자리 맨 처음 숫자)")
+                                fieldWithPath("username").description("사용자 이름")
                         ),
-                        responseFields(
-                                fieldWithPath("id").description("식별번호"),
-                                fieldWithPath("email").description("이메일"),
-                                fieldWithPath("username").description("사용자 이름"),
-                                fieldWithPath("birthDate").description("생년월일"),
-                                fieldWithPath("sex").description("성별")
+                        responseHeaders(
+                                headerWithName("Location").description("사용자 정보 uri")
                         )));
     }
 
-    @DisplayName("요청값 validation")
+    @DisplayName("회원가입 요청 validation 실패")
     @Test
-    public void registerUserFail_Invalid_Email_Form() throws Exception {
+    public void Should_BadRequest_When_InValidRegistrationRequestBody() throws Exception {
         //when
         UserRegistrationReqDto reqDto = new UserRegistrationReqDto();
-        reqDto.setEmail("foo$bar");
+        reqDto.setEmail("foo$bar"); //이메일 형식 오류
         reqDto.setUsername("foo");
-        reqDto.setSex(1);
 
         ResultActions result = mockMvc.perform(post("/api/user")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -109,5 +96,39 @@ public class UserControllerTest {
 
         //then
         result.andExpect(status().isBadRequest());
+    }
+
+    @DisplayName("사용자명 변경 성공")
+    @Test
+    public void Should_Ok_When_ValidModificationRequestBody() throws Exception {
+        //given
+        User user = User.builder()
+                .id(1L)
+                .email("foo@bar")
+                .username("foo").build();
+
+        given(userService.updateUser(any(Long.class), any(UserModificationReqDto.class))).willReturn(user);
+
+        //when
+        UserModificationReqDto reqDto=new UserModificationReqDto();
+        reqDto.setUsername("bar");
+
+        ResultActions result=mockMvc.perform(patch("/api/user/{id}", user.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(reqDto)))
+                .andDo(print());
+
+        //then
+        result.andExpect(status().isOk())
+                .andExpect(header().string("Location", "/api/user/"+user.getId()))
+                .andDo(document("user-modify",
+                        getDocumentRequest(),
+                        getDocumentResponse(),
+                        requestFields(
+                                fieldWithPath("username").description("사용자 이름")
+                        ),
+                        responseHeaders(
+                                headerWithName("Location").description("사용자 정보 uri")
+                        )));
     }
 }
