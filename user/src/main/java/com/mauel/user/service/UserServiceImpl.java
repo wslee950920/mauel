@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
+@Transactional
 @Service
 public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
@@ -23,7 +24,6 @@ public class UserServiceImpl implements UserService {
         this.userRepository = userRepository;
     }
 
-    @Transactional
     @Override
     public User addUser(UserRegistrationReqDto reqDto) {
         Optional<User> optUser;
@@ -42,7 +42,6 @@ public class UserServiceImpl implements UserService {
                 .username(reqDto.getUsername()).build());
     }
 
-    @Transactional
     @Override
     public User updateUser(Long id, UserModificationReqDto reqDto) {
         Optional<User> optUser;
@@ -79,7 +78,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll();
     }
 
-    @Transactional
     @Override
     public void removeUser(Long id) {
         try{
