@@ -28,10 +28,10 @@ public class UserController {
     public ResponseEntity addUser(
             @Valid @RequestBody UserRegistrationReqDto reqDto,
             UriComponentsBuilder uriBuilder) {
-        User user = userService.addUser(reqDto);
+        UserDto userDto = userService.addUser(reqDto);
 
         URI uri = uriBuilder.newInstance()
-                .path("/api/user/{id}").buildAndExpand(user.getId())
+                .path("/api/user/{id}").buildAndExpand(userDto.getId())
                 .toUri();
 
         return ResponseEntity.created(uri).build();
@@ -42,10 +42,10 @@ public class UserController {
             @PathVariable("id") Long id,
             @Valid @RequestBody UserModificationReqDto reqDto,
             UriComponentsBuilder uriBuilder) {
-        User user = userService.updateUser(id, reqDto);
+        UserDto userDto = userService.updateUser(id, reqDto);
 
         URI uri = uriBuilder.newInstance()
-                .path("/api/user/{id}").buildAndExpand(user.getId())
+                .path("/api/user/{id}").buildAndExpand(userDto.getId())
                 .toUri();
 
         HttpHeaders headers = new HttpHeaders();
@@ -56,28 +56,12 @@ public class UserController {
 
     @GetMapping("/user/{id}")
     public ResponseEntity<UserDto> getUser(@PathVariable("id") Long id) {
-        User user = userService.getUser(id);
-
-        UserDto userDto = UserDto.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .username(user.getUsername()).build();
-
-        return ResponseEntity.ok().body(userDto);
+        return ResponseEntity.ok().body(userService.getUser(id));
     }
 
     @GetMapping("/users")
     public ResponseEntity<List<UserDto>> getUsers() {
-        List<UserDto> userDtos = new ArrayList<>();
-
-        for (User user : userService.getUsers()) {
-            userDtos.add(UserDto.builder()
-                    .id(user.getId())
-                    .email(user.getEmail())
-                    .username(user.getUsername()).build());
-        }
-
-        return ResponseEntity.ok().body(userDtos);
+        return ResponseEntity.ok().body(userService.getUsers());
     }
 
     @DeleteMapping("/user/{id}")

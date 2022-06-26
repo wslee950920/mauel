@@ -1,6 +1,7 @@
 package com.mauel.user.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mauel.user.dto.UserDto;
 import com.mauel.user.dto.UserModificationReqDto;
 import com.mauel.user.dto.UserRegistrationReqDto;
 import com.mauel.user.entity.User;
@@ -47,12 +48,12 @@ public class UserControllerTest {
     @Test
     public void Should_Created_When_ValidRegistrationRequestBody() throws Exception {
         //given
-        User user = User.builder()
+        UserDto userDto = UserDto.builder()
                 .id(1L)
                 .email("foo@bar")
                 .username("foo").build();
 
-        given(userService.addUser(any(UserRegistrationReqDto.class))).willReturn(user);
+        given(userService.addUser(any(UserRegistrationReqDto.class))).willReturn(userDto);
 
         //when
         UserRegistrationReqDto reqDto = new UserRegistrationReqDto();
@@ -67,7 +68,7 @@ public class UserControllerTest {
 
         //then
         result.andExpect(status().isCreated())
-                .andExpect(header().string("Location", "/api/user/"+user.getId()))
+                .andExpect(header().string("Location", "/api/user/"+userDto.getId()))
                 .andDo(document("user-register",
                         getDocumentRequest(),
                         getDocumentResponse(),
@@ -102,25 +103,25 @@ public class UserControllerTest {
     @Test
     public void Should_Ok_When_ValidModificationRequestBody() throws Exception {
         //given
-        User user = User.builder()
+        UserDto userDto = UserDto.builder()
                 .id(1L)
                 .email("foo@bar")
                 .username("foo").build();
 
-        given(userService.updateUser(any(Long.class), any(UserModificationReqDto.class))).willReturn(user);
+        given(userService.updateUser(any(Long.class), any(UserModificationReqDto.class))).willReturn(userDto);
 
         //when
         UserModificationReqDto reqDto=new UserModificationReqDto();
         reqDto.setUsername("bar");
 
-        ResultActions result=mockMvc.perform(patch("/api/user/{id}", user.getId())
+        ResultActions result=mockMvc.perform(patch("/api/user/{id}", userDto.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(reqDto)))
                 .andDo(print());
 
         //then
         result.andExpect(status().isOk())
-                .andExpect(header().string("Location", "/api/user/"+user.getId()))
+                .andExpect(header().string("Location", "/api/user/"+userDto.getId()))
                 .andDo(document("user-modify",
                         getDocumentRequest(),
                         getDocumentResponse(),

@@ -1,5 +1,6 @@
 package com.mauel.user.service;
 
+import com.mauel.user.dto.UserDto;
 import com.mauel.user.dto.UserRegistrationReqDto;
 import com.mauel.user.entity.User;
 import com.mauel.user.repository.UserRepository;
@@ -22,7 +23,7 @@ public class UserServiceTest {
     UserRepository userRepository;
 
     @Test
-    public void Should_ReturnUserObject_When_NotDuplicatedEmail_And_NotDuplicatedUsername() {
+    public void Should_ReturnUserDtoObject_When_NotDuplicatedEmail_And_NotDuplicatedUsername() {
         //given
         User user = User.builder()
                 .id(1L)
@@ -36,7 +37,7 @@ public class UserServiceTest {
         reqDto.setEmail("foo@bar");
         reqDto.setUsername("foo");
 
-        User result = userService.addUser(reqDto);
+        UserDto result = userService.addUser(reqDto);
 
         //then
         assertEquals(user.getId(), result.getId());

@@ -1,5 +1,6 @@
 package com.mauel.user.service;
 
+import com.mauel.user.dto.UserDto;
 import com.mauel.user.dto.UserModificationReqDto;
 import com.mauel.user.dto.UserRegistrationReqDto;
 import com.mauel.user.entity.User;
@@ -11,6 +12,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,7 +27,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User addUser(UserRegistrationReqDto reqDto) {
+    public UserDto addUser(UserRegistrationReqDto reqDto) {
         Optional<User> optUser;
 
         optUser = userRepository.findByEmail(reqDto.getEmail());
@@ -37,13 +39,13 @@ public class UserServiceImpl implements UserService {
             throw new DuplicatedException("이미 사용중인 사용자명 입니다.");
         }
 
-        return userRepository.save(User.builder()
+        return entityToDto(userRepository.save(User.builder()
                 .email(reqDto.getEmail())
-                .username(reqDto.getUsername()).build());
+                .username(reqDto.getUsername()).build()));
     }
 
     @Override
-    public User updateUser(Long id, UserModificationReqDto reqDto) {
+    public UserDto updateUser(Long id, UserModificationReqDto reqDto) {
         Optional<User> optUser;
 
         optUser = userRepository.findByUsername(reqDto.getUsername());
@@ -58,24 +60,31 @@ public class UserServiceImpl implements UserService {
         User user = optUser.get();
         user.changeUsername(reqDto.getUsername());
 
-        return userRepository.save(user);
+        return entityToDto(userRepository.save(user));
     }
 
     @Transactional(readOnly = true)
     @Override
-    public User getUser(Long id) {
+    public UserDto getUser(Long id) {
         Optional<User> optUser = userRepository.findById(id);
         if (optUser.isEmpty()) {
             throw new NotFoundException("사용자를 찾을 수 없습니다.");
         }
 
-        return optUser.get();
+        return entityToDto(optUser.get());
     }
 
     @Transactional(readOnly = true)
     @Override
-    public List<User> getUsers() {
-        return userRepository.findAll();
+    public List<UserDto> getUsers() {
+        List<UserDto> userDtos=new ArrayList<>();
+
+        List<User> users=userRepository.findAll();
+        for (User user:users) {
+            userDtos.add(entityToDto(user));
+        }
+
+        return userDtos;
     }
 
     @Override
